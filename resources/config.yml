@@ -1,0 +1,8 @@
+---
+# Welcome to Git2Plugin config.
+# Configure here the mode of building. Possible modes: ToPhar, ToFolder.
+building_mode: ToPhar
+
+# Configure here the sources:
+srcs: ["https://github.com/BoxOfDevs/Elytra.git", "http://github.com/Ad5001/BlockParticle"]
+...
