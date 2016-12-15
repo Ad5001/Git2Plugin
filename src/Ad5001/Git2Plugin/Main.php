@@ -34,7 +34,6 @@ class Main extends PluginBase implements Listener {
         $this->reloadConfig();
         @mkdir($this->getDataFolder() . "tmp");
         @mkdir($this->getDataFolder() . "tmp/new");
-        @mkdir($this->getDataFolder() . "tmp/gits");
         $this->getServer()->getPluginManager()->registerEvents($this, $this);
 
         if(!($this->getServer()->getPluginManager()->getPlugin("Gitable") instanceof PluginBase)) {

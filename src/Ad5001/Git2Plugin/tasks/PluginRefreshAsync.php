@@ -117,6 +117,17 @@ class PluginRefreshAsync extends AsyncTask {
 				);
 				$update = true;
 			}
+
+
+			// Cloning the update...
+			if($update && file_exists("$path/$name/plugin.yml")) {
+				foreach ($array_diff(scandir("$path/$name"), array('.','..', ".git")) as $file) {
+					@mkdir($path . "../pl-" .$name);
+					copy("$path/$name/$file", "$path../pl-$name/");
+				}
+			} elseif(!file_exists("$path/$name/plugin.yml")) {
+				echo "[Git2Plugin - AsyncTask] $name downloaded at $src isn't a plugin !";
+			}
 		}
 	}
 	
