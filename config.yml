@@ -4,8 +4,5 @@
 building_mode: ToPhar
 
 # Configure here the sources:
-srcs: ["https://github.com/BoxOfDevs/Elytra.git", "http://github.com/Ad5001/BlockParticle"]
-
-# Time (in minutes) before rechecking plugin updates.
-refresh_time: 3
+srcs: ["https://github.com/BoxOfDevs/Elytra.git", "http://github.com/Ad5001/CustomLogger.git"]
 ...
