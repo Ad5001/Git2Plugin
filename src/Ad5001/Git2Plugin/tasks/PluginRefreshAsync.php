@@ -24,6 +24,14 @@ use Ad5001\Git2Plugin\Main;
 
 
 class PluginRefreshAsync extends AsyncTask {
+
+
+	const RED = "\e[92m";
+	const GREEN = "\e[93m";
+	const YELLOW = "\e[94m";
+	const BLUE = "\e[96m";
+	const PURPLE = "\e[97m";
+	const LIGHT_BLUE = "\e[98m";
 	
 	
 	
@@ -40,9 +48,9 @@ class PluginRefreshAsync extends AsyncTask {
 	
 	public function onRun() {
 		foreach ($this->srcs as $src) {
-			@mkdir($this->path . explode(".", explode("/", $src)[count(explode("/", $src)) - 1])[0]);
 			$name = explode(".", explode("/", $src)[count(explode("/", $src)) - 1])[0];
 			$update = false;
+			$path = $this->path;
 			if(is_dir("$path/$name")) {
 				proc_open(
 												    "$this->git fetch origin" ,
@@ -69,7 +77,7 @@ class PluginRefreshAsync extends AsyncTask {
 					fclose($pipes[1]);
 					proc_close($process);
 				} else {
-					echo "Looks like we're having some trouble with the execution of async commands (ERROR 1).";
+					self::log( "Looks like we're having some trouble with the execution of async commands (ERROR 1).");
 				}
 				
 
@@ -87,7 +95,7 @@ class PluginRefreshAsync extends AsyncTask {
 					fclose($pipes[1]);
 					proc_close($process);
 				} else {
-					echo "Looks like we're having some trouble with the execution of async commands (ERROR 2).";
+					self::log( "Looks like we're having some trouble with the execution of async commands (ERROR 2).");
 				}
 
 
@@ -106,8 +114,9 @@ class PluginRefreshAsync extends AsyncTask {
 
 
 			} else {
+				@mkdir($this->path . explode(".", explode("/", $src)[count(explode("/", $src)) - 1])[0]);
 				$process = proc_open( // Downloading new plugin
-						"$this->git clone $src",
+						"$this->git clone $src $path/$name",
 					    array(
 						      0 => array("pipe", "r"), //S				TDIN
 						      1 => array("pipe", "w"), //S				TDOUT
@@ -115,20 +124,55 @@ class PluginRefreshAsync extends AsyncTask {
 					    ),
 					    $pipes, "$path/$name"
 				);
+				if ($process !== false) {
+					$stdout = stream_get_contents($pipes[1]);
+					fclose($pipes[1]);
+					$stderr = stream_get_contents($pipes[2]);
+					fclose($pipes[2]);
+					proc_close($process);
+				} else {
+					self::log( "Looks like we're having some trouble with the execution of async commands (ERROR 3).");
+				}
+
 				$update = true;
 			}
 
 
 			// Cloning the update...
 			if($update && file_exists("$path/$name/plugin.yml")) {
-				foreach ($array_diff(scandir("$path/$name"), array('.','..', ".git")) as $file) {
-					@mkdir($path . "../pl-" .$name);
-					copy("$path/$name/$file", "$path../pl-$name/");
-				}
+				@mkdir($path . "../pl-" .$name);
+				$this->xcopy("$path/$name/", "$path../pl-$name/");
 			} elseif(!file_exists("$path/$name/plugin.yml")) {
-				echo "[Git2Plugin - AsyncTask] $name downloaded at $src isn't a plugin !";
+				self::log("$name downloaded at $src isn't a plugin !");
 			}
 		}
+	}
+
+
+
+	public function xcopy($src, $dst) {
+   		$dir = opendir($src); 
+    	@mkdir($dst); 
+    	while(false !== ( $file = readdir($dir)) ) { 
+        	if (( $file != '.' ) && ( $file != '..' ) && ($file !== ".git")) { 
+            	if ( is_dir($src . '/' . $file) ) { 
+                	$this->xcopy($src.'/'.$file, $dst.'/'.$file); 
+            	} else { 
+                	copy($src.'/'.$file, $dst.'/'.$file); 
+            	} 
+        	} 
+    	} 
+    	closedir($dir);
+	}
+
+
+
+	/*
+	Logs a message.
+	@param     $msg    string
+	*/
+	public static function log(string $msg) {
+		echo self::GREEN . "[" . self::LIGHT_BLUE . "Git2Plugin - Async" . self::GREEN . "] " . self::RED . $msg . "\n";
 	}
 	
 	

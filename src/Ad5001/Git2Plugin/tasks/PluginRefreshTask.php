@@ -52,7 +52,8 @@ class PluginRefreshTask extends PluginTask {
 		$this->server->getScheduler()->scheduleAsyncTask(new PluginRefreshAsync($this->main));
 		foreach (array_diff(scandir($this->main->getDataFolder() . "tmp/"), [".", "..", ".git", "new"]) as $info) {
             
-            if(substr($info, 3) != "pl-") {
+            if(!is_dir($this->main->getDataFolder() . "tmp/$info") || !file_exists($this->main->getDataFolder() . "tmp/$info/plugin.yml")) {
+                $this->main->getLogger()->notice("$info is not a plugin folder.");
                 continue;
             } else {
                 $path = $this->main->getDataFolder() . "tmp/$info";
@@ -75,7 +76,20 @@ class PluginRefreshTask extends PluginTask {
                 $this->main->getLogger()->info("Installing version ".$plyml["version"]."... ");
 
 
-
+                // Disabling the current plguin (to not have any problems)
+                var_dump($this->main->getServer()->getPluginManager()->getPlugin($plyml["name"]));
+                if($this->main->getServer()->getPluginManager()->getPlugin($plyml["name"]) instanceof \pocketmine\plugin\Plugin) {
+                    $this->main->getServer()->getPluginManager()->getPlugin($plyml["name"] )->setEnabled(false);
+                    
+                    $class = new \ReflectionClass('pocketmine\\plugin\\PluginManager');
+                    $property = $class->getProperty('plugins');
+                    $property->setAccessible(true);
+                    $plugins = $property->getValue(Server::getInstance()->getPluginManager());
+                    unset($plugins[$plyml["name"]]);
+                    $property->setValue(Server::getInstance()->getPluginManager(), $plugins);
+                    $property->setAccessible(false);
+                }
+                
                 // Installing the new version...
                    if($this->main->getConfig()->get("building_mode") == "ToPhar") {
                        $phar = new \Phar($this->main->getServer()->getPluginPath() . $plyml["name"] . "_v" . $plyml["version"] . ".phar");
@@ -106,14 +120,19 @@ class PluginRefreshTask extends PluginTask {
 	}
 
     
-
-    public function delete_files($dir) { 
-        if(is_dir($dir)) {
-            foreach(array_diff(scandir($dir), array('.','..')) as $file) {
-                chown($dir ."/" .$file, 777);
-                if(is_dir($dir ."/" .$file)) $this->delete_files($dir ."/" .$file); else unlink($dir ."/" .$file); 
-            } rmdir($dir); 
-        }
+    public function delete_files($src) { 
+   		$dir = opendir($src); 
+    	while(false !== ( $file = readdir($dir)) ) { 
+        	if (( $file != '.' ) && ( $file != '..' )) { 
+            	if ( is_dir($src . '/' . $file) ) { 
+                	$this->delete_files($src.'/'.$file); 
+            	} else { 
+                	unlink($src.'/'.$file); 
+            	} 
+        	} 
+    	}
+    	closedir($dir);
+        rmdir($src);
     }
 
 
