@@ -55,9 +55,9 @@ class PluginRefreshAsync extends AsyncTask {
 				proc_open(
 												    "$this->git fetch origin" ,
 												    array(
-												      0 => array("pipe", "r"), //S				TDIN
-												      1 => array("pipe", "w"), //S				TDOUT
-												      2 => array("pipe", "w"), //S				TDERR
+												    	0 => array("pipe", "r"), //S				TDIN
+												    	1 => array("pipe", "w"), //S				TDOUT
+												      	2 => array("pipe", "w"), //S				TDERR
 												    ),
 												    $pipes, "$path/$name"
 				);
@@ -66,9 +66,9 @@ class PluginRefreshAsync extends AsyncTask {
 				$process = proc_open( // SOurce plugin count
 												    "$this->git rev-list origin --count" ,
 												    array(
-												      0 => array("pipe", "r"), //S				TDIN
-												      1 => array("pipe", "w"), //S				TDOUT
-												      2 => array("pipe", "w"), //S				TDERR
+												      	0 => array("pipe", "r"), //S				TDIN
+												      	1 => array("pipe", "w"), //S				TDOUT
+												      	2 => array("pipe", "w"), //S				TDERR
 												    ),
 												    $pipes, "$path/$name"
 				);
@@ -98,14 +98,14 @@ class PluginRefreshAsync extends AsyncTask {
 					self::log( "Looks like we're having some trouble with the execution of async commands (ERROR 2).");
 				}
 
-
+				self::log("Name: $name, Old number of commits: $oldCount, new number of commits: $newCount");
 				if($oldCount < $newCount) {
 					$process = proc_open( // Downloading changes
 												    "$this->git pull" ,
 												    array(
-												      0 => array("pipe", "r"), //S				TDIN
-												      1 => array("pipe", "w"), //S				TDOUT
-												      2 => array("pipe", "w"), //S				TDERR
+												      	0 => array("pipe", "r"), //S				TDIN
+												      	1 => array("pipe", "w"), //S				TDOUT
+												      	2 => array("pipe", "w"), //S				TDERR
 												    ),
 												    $pipes, "$path/$name"
 					);
@@ -153,8 +153,8 @@ class PluginRefreshAsync extends AsyncTask {
 	public function xcopy($src, $dst) {
    		$dir = opendir($src); 
     	@mkdir($dst); 
-    	while(false !== ( $file = readdir($dir)) ) { 
-        	if (( $file != '.' ) && ( $file != '..' ) && ($file !== ".git")) { 
+    	while(false !== ( $file = readdir($dir)) ) {
+        	if (( $file != '.' ) && ( $file != '..' ) && strpos($file, ".git") == false && strpos($src, ".git") == false) { 
             	if ( is_dir($src . '/' . $file) ) { 
                 	$this->xcopy($src.'/'.$file, $dst.'/'.$file); 
             	} else { 

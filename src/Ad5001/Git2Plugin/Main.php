@@ -65,6 +65,7 @@ class Main extends PluginBase implements Listener {
     /*
     Deletes old plugin, add the new one, loads it.
     @param     $pluginpath    string
+    @return string[]
     */
     public function getPluginFiles(string $pluginpath) {
         if(!is_dir($pluginpath)) {
