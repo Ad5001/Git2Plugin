@@ -22,6 +22,8 @@ use pocketmine\Player;
 
 
 use Ad5001\Git2Plugin\Main;
+use Ad5001\Git2Plugin\events\PluginPreUpdateEvent;
+use Ad5001\Git2Plugin\events\PluginUpdateEvent;
 
 
 
@@ -52,6 +54,8 @@ class PluginRefreshTask extends PluginTask {
 	
 	
 	public function onRun($tick) {
+
+        $this->main->getConfig()->reload();
         $this->main->getLogger()->notice("Checking updates....");
 		$git = $this->server->getPluginManager()->getPlugin("Gitable")->getGitClient()->executable;
 		$this->server->getScheduler()->scheduleAsyncTask(new PluginRefreshAsync($this->main));
@@ -67,26 +71,9 @@ class PluginRefreshTask extends PluginTask {
             // For the events.
 			$files = $this->main->getPluginFiles($path);
             $plyml = yaml_parse(file_get_contents($path . "/plugin.yml"));
-            $ev = new PluginPreUpdateEvent($this->getServer()->getPlugin($plyml["name"]), new PluginDescription($plyml), $files);
+            $ev = new PluginPreUpdateEvent($this->main->getServer()->getPluginManager()->getPlugin($plyml["name"]), new PluginDescription($plyml), $files);
             $this->server->getPluginManager()->callEvent($ev);
             if($ev->isCancelled()) continue;
-
-			
-			// 				Deleting old files.
-				foreach($files as $file) {
-					if(is_dir($this->server->getPluginPath() . $file)){
-						if(file_exists($this->server->getPluginPath() . $file . "/plugin.yml")) {
-							$this->delete_files($this->server->getPluginPath() . $file);
-                            $this->main->getLogger()->info("Deleted folder $file... ");
-						}
-					} elseif(explode(".", $file)[count(explode(".", $file)) - 1] == "phar") {
-						if(file_exists("phar://".$this->server->getPluginPath().$file . "/plugin.yml")) {
-                            if(unlink($this->server->getPluginPath() . $file)) $this->main->getLogger()->debug("Deleted phar $file... ");
-                        }
-					} elseif(explode(".", $file)[count(explode(".", $file)) - 1] == "php") {
-                        if(unlink($this->server->getPluginPath() . $file)) $this->main->getLogger()->debug("Deleted php plugin $file... ");
-					}
-				}
                 $this->main->getLogger()->info("Installing " . $plyml["name"] . " version ".$plyml["version"]."... ");
 
 
@@ -113,7 +100,7 @@ class PluginRefreshTask extends PluginTask {
                        $loader = new \pocketmine\plugin\PharPluginLoader($this->main->getServer());
                        $pl = $loader->loadPlugin($this->main->getServer()->getPluginPath() . $plyml["name"] . "_v" . $plyml["version"] . ".phar");
                        $ev = new PluginUpdateEvent($pl);
-                       $this->server->callEvent($pl);
+                       $this->server->getPluginManager()->callEvent($ev);
                        $loader->enablePlugin($pl);
                        $this->main->getLogger()->debug("Succefully enabled plugin " . $plyml["name"] . " !");
                        $this->delete_files($path);

@@ -7,6 +7,8 @@ Called when a plugin is updating
 */
 class PluginUpdateEvent extends PluginEvent {
 
+    static $handlerList = null;
+
     /*
     Constructs the class
     @param     $newPlugin   \pocketmine\plugin\Plugin

@@ -8,6 +8,8 @@ Called just before a plugin is updating
 */
 class PluginPreUpdateEvent extends PluginEvent implements Cancellable {
 
+    static $handlerList = null;
+
     /*
     Constructs the class
     @param     $oldPlugin   \pocketmine\plugin\Plugin|null

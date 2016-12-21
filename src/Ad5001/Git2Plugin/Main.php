@@ -82,4 +82,10 @@ class Main extends PluginBase implements Listener {
     }
 
 
+    public function addSource(string $url) {
+        yield $this->getConfig()->set("srcs", array_merge($this->getConfig()->get("srcs"), [$url]));
+        $this->getConfig()->save();
+    }
+
+
 }
