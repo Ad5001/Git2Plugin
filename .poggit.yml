@@ -3,5 +3,5 @@ branches:
 - master
 projects:
   Git2Plugin:
-    path: "releases"
+    path: ""
 ...
